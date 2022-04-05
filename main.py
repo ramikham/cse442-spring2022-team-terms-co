@@ -1,3 +1,5 @@
+from distutils.command.config import config
+from unicodedata import name
 import keep_alive
 import os
 import random
@@ -15,10 +17,13 @@ client = discord.Client(intents=discord.Intents.all())
 
 # Read the private key from a local file
 TOKEN = os.environ['TOKEN']
-toDos = {0: 0, -1: ''}
-completed = {}
-# toDos =  { taskID: (task_details, tim_e) }
-# completed =  { taskID: (task_details, tim_e) }
+toDos = {0: 0, -1: ''} # toDos =  { taskID: (task_details, tim_e) }
+completed = {} # completed =  { taskID: (task_details, tim_e) }
+
+
+
+user_dict = {}
+
 important_tasks = {}  # important_tasks = {taskID : "task_details + time" }
 
 replies = [
