@@ -104,9 +104,9 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    usr_important_message = message.content.split()
+    usr_important_message = message.content.split() # parsing user's message for makring tasks as important
 
-    # Snigdha's code:********************************************************************************************************
+    # Snigdha's code:***************************************************************************************************
     # add task
     regexCheck = re.match(".*(?![remind me to]).+", message.content)
     remindMeCheck = re.match("(.*(?=[R-r]emind me to).*)", message.content)
@@ -147,9 +147,27 @@ async def on_message(message):
             scheduler.add_job(func, CronTrigger(hour=time_hrs, minute=time_mins, second="0"),
                               (message, task_details, military_time,), id=str(taskID)) # old
             scheduler.print_jobs()
+            # ----------------------------------------------------------------------------------------------------------
 
             # ----------------------------------------------------------------------------------------------------------
+            # Mike's addition to add
+            # Should function independently of other code
+            print(message.author.name)
+
+            if message.author.id not in user_dict:
+                user_dict[message.author.id] = {}
+                user_dict[message.author.id][taskID] = (message.content[13:split_index].strip(), tim_e)
+                print("Create user dict: ", user_dict)
+            else:
+                user_dict[message.author.id][taskID] = (message.content[13:split_index].strip(), tim_e)
+                print("Added to user dict: ", user_dict)
+
+
+            await message.channel.send(replies[random.randrange(len(replies))] + ". The task ID is " + str(taskID))
+            # ----------------------------------------------------------------------------------------------------------
+
             return
+
         else:
             split_index = message.content.find(' to')
             task = message.content[split_index + 3:].replace(' ', '').strip()
@@ -170,9 +188,9 @@ async def on_message(message):
         print(toDos, " counter incremented")
         await message.channel.send(replies[random.randrange(len(replies))] + ". The task ID is " + str(taskID))
         return
-    # ***********************************************************************************************************************
+    # ******************************************************************************************************************
 
-    # Tanvie's code:********************************************************************************************************
+    # Tanvie's code:****************************************************************************************************
     # delete task
     elif message.content.startswith('delete '):
         split_index = 7
@@ -180,25 +198,49 @@ async def on_message(message):
         to_del = message.content[split_index:]
         # the task ID to delete is to_del
         print(to_del)
+        # Mikes User Specific addition to delete $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+        if not to_del.isdigit():
+            await message.channel.send(
+                "Invalid format. Send a message 'help' for assistance with valid formats."
+            )
+        elif message.author.id not in user_dict:
+            await message.channel.send("You can't delete a task because you have not added any")
+        elif int(to_del) not in user_dict[message.author.id]:
+            await message.channel.send("A message with that id does not exist")
+        elif int(to_del) in user_dict[message.author.id]:
+            user_dict[message.author.id].pop(int(to_del))
+            await message.channel.send("Successfully deleted!")
+            if int(to_del) in important_tasks: important_tasks.pop(int(to_del),
+                                                                   None)  # Rami's Addition: coupling "important" with "delete".
+        else:
+            # This should never run
+            await message.channel.send("Invalid deletion")
+
+        # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
         if not to_del.isdigit():
             await message.channel.send(
                 "Invalid format. Send a message 'help' for assistance with valid formats."
             )
         elif int(to_del) in toDos:
             toDos.pop(int(to_del.strip()))
+            delete(to_del)
             await message.channel.send("You have successfully deleted a task!")
-            # Rami's Addition:------------------------------------------------------------------------------------------
-            if int(to_del) in important_tasks: important_tasks.pop(int(to_del), None)
-            # ----------------------------------------------------------------------------------------------------------
+            if int(to_del) in important_tasks: important_tasks.pop(int(to_del),
+                                                                   None)  # Rami's Addition: coupling "important" with "delete".
         elif int(to_del) in completed:
             completed.pop(int(to_del.strip()))
             await message.channel.send("You have successfully deleted a task!")
-            # Rami's Addition:------------------------------------------------------------------------------------------
-            # task: coupling "important" with "delete":
-            if int(to_del) in important_tasks: important_tasks.pop(int(to_del), None)
-            # ----------------------------------------------------------------------------------------------------------
+            if int(to_del) in important_tasks: important_tasks.pop(int(to_del),
+                                                                   None)  # Rami's Addition: coupling "important" with "delete".
+        elif int(to_del) in completed:
+            completed.pop(int(to_del.strip()))
+            await message.channel.send("You have successfully deleted a task!")
+            if int(to_del) in important_tasks: important_tasks.pop(int(to_del),
+                                                                   None)  # Rami's Addition: coupling "important" with "delete".
         else:
             await message.channel.send("No such task exists")
+
             return
         print(toDos)
     # ******************************************************************************************************************
@@ -235,6 +277,22 @@ async def on_message(message):
             scheduler.remove_job(str(message_id))
             # ----------------------------------------------------------------------------------------------------------
 
+    # ******************************************************************************************************************
+
+    # Mike's code: *****************************************************************************************************
+    elif message.content.startswith('userview'):
+        if message.author.id in user_dict:
+            user_str = ""
+            if len(user_dict[message.author.id]) > 0:
+                for item in user_dict[message.author.id]:
+                    print(item)
+                    user_str += "Task " + str(item) + ": " + str(
+                        user_dict[message.author.id][item][0]) + "Author id: " + str(message.author.id) + "\n"
+                await message.channel.send(user_str)
+            else:
+                await message.channel.send("You have no stored tasks")
+        else:
+            await message.channel.send("You have no stored tasks")
     # ******************************************************************************************************************
 
     # Elijah's code:****************************************************************************************************
@@ -283,6 +341,7 @@ async def on_message(message):
         await message.channel.send(embed=embed)
 
     # ******************************************************************************************************************
+
     # Elijah's code:****************************************************************************************************
     # clear all
     elif message.content.startswith('clear all tasks') or message.content.startswith('clear'):
