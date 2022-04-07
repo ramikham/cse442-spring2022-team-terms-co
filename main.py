@@ -16,7 +16,6 @@ intents.members = True
 client = discord.Client(intents=discord.Intents.all())
 
 # Read the private key from a local file
-TOKEN = os.environ['TOKEN']
 toDos = {0: 0, -1: ''} # toDos =  { taskID: (task_details, tim_e) }
 completed = {} # completed =  { taskID: (task_details, tim_e) }
 
@@ -527,4 +526,6 @@ async def on_message(message):
 
 
 keep_alive.keep_alive()
-client.run(TOKEN)
+if __name__ == '__main__':
+    import config
+    client.run(config.token)
