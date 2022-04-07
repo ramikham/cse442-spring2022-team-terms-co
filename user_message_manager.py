@@ -120,6 +120,10 @@ def view_important_tasks(important_tasks_dictionary):
 def table_view_important_tasks():
     return
 
+def edit_important_tasks(task_ID, new_task, new_time, target_dictionary):
+    if task_ID in target_dictionary:
+        target_dictionary[task_ID] = new_task + new_time
+    print(target_dictionary)
 
 def bot_greeting_msg():
     """ This function returns the bot message when the user enters a greeting message. With a random probability of a

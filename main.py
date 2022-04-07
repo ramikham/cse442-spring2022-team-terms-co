@@ -420,6 +420,9 @@ async def on_message(message):
                     if is_time_format(time):
                         edited_entry = (new_task, time)
                         toDos[task_ID] = edited_entry  # new entry is entered as a tuple
+                        # Rami's Addition:----------------------------------------------------------------------------------------------
+                        # task: coupling "important" with "completed":
+                        edit_important_tasks(task_ID, new_task, time, important_tasks)
         # "reminder" addition: -----------------------------------------------------------------------------------------
                         user_time = process_input_time(time)
 
